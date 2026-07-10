@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN" "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 
-<!-- HelpSet auto-generated on Fri Jul 10 12:22:10 EDT 2026 -->
+<!-- HelpSet auto-generated on Fri Jul 10 12:36:40 EDT 2026 -->
 <helpset version="2.0">
 	<title>RITGenAiPlugginTest HelpSet</title>
 	<maps>

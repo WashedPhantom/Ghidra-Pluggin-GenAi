@@ -80,7 +80,7 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 		private DockingAction action;
 
 		public MyProvider(Plugin plugin, String owner) {
-			super(plugin.getTool(), "Skeleton Provider", owner);
+			super(plugin.getTool(), "RIT Test", owner);
 			buildPanel();
 			createActions();
 		}
