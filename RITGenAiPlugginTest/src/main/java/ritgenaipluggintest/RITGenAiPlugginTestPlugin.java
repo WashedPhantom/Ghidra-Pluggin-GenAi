@@ -31,7 +31,12 @@ import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.util.HelpLocation;
 import ghidra.util.Msg;
 import resources.Icons;
-
+//ghidra method imports
+import ghidra.program.model.address.Address;
+import ghidra.program.util.ProgramLocation;
+import ghidra.program.model.listing.Program;
+import ghidra.program.model.listing.Function;
+import ghidra.program.model.listing.FunctionManager;
 /**
  * Provide class-level documentation that describes what this plugin does.
  */
@@ -72,6 +77,7 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 
 		// Acquire services if necessary
 	}
+	
 
 	// If provider is desired, it is recommended to move it to its own file
 	private static class MyProvider extends ComponentProvider {
@@ -81,13 +87,18 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 		private JTextField inputField;
 		private JButton sendButton;
 		private DockingAction action;
-
-		public MyProvider(Plugin plugin, String owner) {
+		private final RITGenAiPlugginTestPlugin plugin;
+		
+		public MyProvider(RITGenAiPlugginTestPlugin plugin, String owner) {
 			super(plugin.getTool(), "RIT Test", owner);
+			
+			//allows for provider to query the plugin for information
+			this.plugin = plugin;
+					
 			buildPanel();
 			createActions();
 		}
-
+				
 		// Customize GUI
 		private void buildPanel() {
 			panel = new JPanel(new BorderLayout());
@@ -158,4 +169,73 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 			return panel;
 		}
 	}
+	
+	//Helper Methods for Ghidra information
+	public Program getCurrentProgram() {
+		return currentProgram;
+	}
+	
+	public Address getCurrentAddress() {
+
+	    if (currentLocation == null) {
+	        return null;
+	    }
+
+	    return currentLocation.getAddress();
+	}	
+	
+	public Function getCurrentFunction() {
+
+		Address currentAddress = getCurrentAddress(); 
+		
+	    if (currentProgram == null || currentAddress == null) {
+	        return null;
+	    }
+
+	    FunctionManager fm = currentProgram.getFunctionManager();
+
+	    return fm.getFunctionContaining(currentAddress);
+	}
+	
+	public String getCurrentFunctionName() {
+
+	    Function function = getCurrentFunction();
+
+	    if (function == null) {
+	        return "No function selected";
+	    }
+
+	    return function.getName();
+	}
+	
+	//For simplifying sendMessage()
+	//chatArea.append(buildContext)
+	public String buildContext() {
+
+		Address currentAddress = getCurrentAddress(); 
+	    StringBuilder sb = new StringBuilder();
+
+	    if (currentProgram != null) {
+	        sb.append("Program: ")
+	          .append(currentProgram.getName())
+	          .append("\n");
+	    }
+
+	    if (currentAddress != null) {
+	        sb.append("Address: ")
+	          .append(currentAddress)
+	          .append("\n");
+	    }
+
+	    Function function = getCurrentFunction();
+
+	    if (function != null) {
+	        sb.append("Function: ")
+	          .append(function.getName())
+	          .append("\n");
+	    }
+
+	    return sb.toString();
+	}
+
 }
