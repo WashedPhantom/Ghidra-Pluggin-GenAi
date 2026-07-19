@@ -77,6 +77,9 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 	private static class MyProvider extends ComponentProvider {
 
 		private JPanel panel;
+		private JTextArea chatArea;
+		private JTextField inputField;
+		private JButton sendButton;
 		private DockingAction action;
 
 		public MyProvider(Plugin plugin, String owner) {
@@ -88,10 +91,33 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 		// Customize GUI
 		private void buildPanel() {
 			panel = new JPanel(new BorderLayout());
-			JTextArea textArea = new JTextArea(5, 25);
-			textArea.setEditable(false);
-			panel.add(new JScrollPane(textArea));
-			setVisible(true);
+			
+			// Chat history
+			 chatArea = new JTextArea();
+		    chatArea.setEditable(false);
+		    chatArea.setLineWrap(true);
+		    chatArea.setWrapStyleWord(true);
+
+		    JScrollPane scrollPane = new JScrollPane(chatArea);
+
+		    // Bottom input area
+		    JPanel inputPanel = new JPanel(new BorderLayout());
+
+		    inputField = new JTextField();
+
+		    sendButton = new JButton("Send");
+		    //Pressing enter or clicking send will do the same thing
+		    sendButton.addActionListener(e -> sendMessage());
+		    inputField.addActionListener(e -> sendMessage());
+
+		    inputPanel.add(inputField, BorderLayout.CENTER);
+		    inputPanel.add(sendButton, BorderLayout.EAST);
+
+		    panel.add(scrollPane, BorderLayout.CENTER);
+		    panel.add(inputPanel, BorderLayout.SOUTH);
+
+		    setVisible(true);
+		    
 		}
 
 		// Customize actions
@@ -106,6 +132,25 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 			action.setEnabled(true);
 			action.markHelpUnnecessary();
 			dockingTool.addLocalAction(this, action);
+		}
+		
+		private void sendMessage() {
+
+		    String message = inputField.getText().trim();
+
+		    if (message.isEmpty()) {
+		        return;
+		    }
+
+		    chatArea.append("You: " + message + "\n\n");
+
+		    inputField.setText("");
+
+		    // AI response flow will go here
+		    //String response = <call the AI>
+		    chatArea.append("AI: Thinking...\n\n");
+		    
+		    chatArea.setCaretPosition(chatArea.getDocument().getLength());
 		}
 
 		@Override
