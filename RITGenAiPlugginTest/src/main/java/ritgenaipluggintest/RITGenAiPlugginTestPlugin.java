@@ -48,7 +48,7 @@ import ghidra.program.model.listing.FunctionManager;
 	shortDescription = "Plugin short description goes here.",
 	description = "Plugin long description goes here."
 )
-//@formatter:on
+//@formatter:on~
 public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 
 	MyProvider provider;
@@ -89,6 +89,9 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 		private DockingAction action;
 		private final RITGenAiPlugginTestPlugin plugin;
 		
+		//API client access
+		private RITGenAITestAIClient aiClient = new RITGenAITestAIClient();
+		
 		public MyProvider(RITGenAiPlugginTestPlugin plugin, String owner) {
 			super(plugin.getTool(), "RIT Test", owner);
 			
@@ -97,6 +100,7 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 					
 			buildPanel();
 			createActions();
+			
 		}
 				
 		// Customize GUI
@@ -145,6 +149,16 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 			dockingTool.addLocalAction(this, action);
 		}
 		
+		private String escapeJson(String text) {
+
+		    return text
+		            .replace("\\", "\\\\")
+		            .replace("\"", "\\\"")
+		            .replace("\n", "\\n")
+		            .replace("\r", "");
+		}
+		
+		
 		private void sendMessage() {
 
 		    String message = inputField.getText().trim();
@@ -158,8 +172,68 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 		    inputField.setText("");
 
 		    // AI response flow will go here
-		    //String response = <call the AI>
-		    chatArea.append("AI: Thinking...\n\n");
+		    String context = plugin.buildContext();
+		    String prompt =
+		    	    "You are an expert reverse engineering assistant.\n\n" +
+		    	    "Current Ghidra Context:\n" +
+		    	    context +
+		    	    "\n\n" +
+		    	    "User Question:\n" +
+		    	    message;
+		  
+		    prompt = escapeJson(prompt);
+		    
+		    String json =
+		    		"{"
+		    		+ "\"model\":\"qwen3:latest\","
+		    		+ "\"messages\":["
+		    		+ "{"
+		    		+ "\"role\":\"system\","
+		    		+ "\"content\":\"You are an expert reverse engineering assistant.\""
+		    		+ "},"
+		    		+ "{"
+		    		+ "\"role\":\"user\","
+		    		+ "\"content\":\"" + prompt + "\""
+		    		+ "}"
+		    		+ "]"
+		    		+ "}";
+		    
+		    new Thread(() -> {
+
+		        try {
+
+		            String response =
+		                    aiClient.send(json);
+
+		            SwingUtilities.invokeLater(() -> {
+
+		                chatArea.append("AI: ");
+		                chatArea.append(response);
+		                chatArea.append("\n\n");
+
+		                chatArea.setCaretPosition(
+		                    chatArea.getDocument().getLength());
+
+		            });
+
+		        }
+		        catch (Exception ex) {
+
+		            SwingUtilities.invokeLater(() -> {
+
+		                chatArea.append(
+		                    "AI: Error contacting server.\n");
+
+		                chatArea.append(
+		                    ex.getMessage());
+
+		                chatArea.append("\n\n");
+
+		            });
+
+		        }
+
+		    }).start();
 		    
 		    chatArea.setCaretPosition(chatArea.getDocument().getLength());
 		}
@@ -168,6 +242,21 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 		public JComponent getComponent() {
 			return panel;
 		}
+	}
+	
+	public class AIConfig {
+
+	    public static String getApiKey() {
+	        return System.getenv("AI_API_KEY");
+	    }
+
+	    public static String getEndpoint() {
+	        return "https://api.genai.gccis.rit.edu/v1/chat/completions";
+	    }
+
+	    public static String getModel() {
+	        return "qwen3:latest";
+	    }
 	}
 	
 	//Helper Methods for Ghidra information
