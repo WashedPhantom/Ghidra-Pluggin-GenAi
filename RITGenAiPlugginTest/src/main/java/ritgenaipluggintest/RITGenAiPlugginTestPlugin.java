@@ -37,6 +37,9 @@ import ghidra.program.util.ProgramLocation;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.FunctionManager;
+import ghidra.program.model.listing.Instruction;
+import ghidra.program.model.listing.Data;
+import ghidra.program.model.symbol.Symbol;
 /**
  * Provide class-level documentation that describes what this plugin does.
  */
@@ -297,34 +300,118 @@ public class RITGenAiPlugginTestPlugin extends ProgramPlugin {
 	    return function.getName();
 	}
 	
+	public String getCurrentSelection() {
+
+	    if (currentProgram == null) {
+	        return "No program loaded.";
+	    }
+
+	    if (currentSelection == null) {
+	        return "No selection.";
+	    }
+
+	    Address start = currentSelection.getMinAddress();
+	    Address end = currentSelection.getMaxAddress();
+
+	    return "Selection: " 
+	            + start 
+	            + " - " 
+	            + end;
+	}
+	
+	public String getCurrentInstruction() {
+
+	    if (currentProgram == null || currentLocation == null) {
+	        return "No instruction selected.";
+	    }
+
+	    Address address = currentLocation.getAddress();
+
+	    Instruction instruction =
+	            currentProgram
+	            .getListing()
+	            .getInstructionAt(address);
+
+	    if (instruction == null) {
+	        return "No instruction at current address.";
+	    }
+
+	    return instruction.toString();
+	}
+	
+	public String getCurrentData() {
+
+	    if (currentProgram == null || currentLocation == null) {
+	        return "No data selected.";
+	    }
+
+	    Address address = currentLocation.getAddress();
+
+	    Data data =
+	            currentProgram
+	            .getListing()
+	            .getDataAt(address);
+
+	    if (data == null) {
+	        return "No data at current address.";
+	    }
+
+	    return data.toString();
+	}
+	
+	public String getCurrentSymbol() {
+
+	    if (currentProgram == null || currentLocation == null) {
+	        return "No symbol.";
+	    }
+
+	    Address address = currentLocation.getAddress();
+
+	    Symbol symbol =
+	            currentProgram
+	            .getSymbolTable()
+	            .getPrimarySymbol(address);
+
+	    if (symbol == null) {
+	        return "No symbol at address.";
+	    }
+
+	    return symbol.getName();
+	}
+	
 	//For simplifying sendMessage()
 	//chatArea.append(buildContext)
 	public String buildContext() {
 
-		Address currentAddress = getCurrentAddress(); 
 	    StringBuilder sb = new StringBuilder();
 
-	    if (currentProgram != null) {
-	        sb.append("Program: ")
-	          .append(currentProgram.getName())
-	          .append("\n");
-	    }
+	    sb.append("Program:\n")
+	      .append(currentProgram.getName())
+	      .append("\n\n");
 
-	    if (currentAddress != null) {
-	        sb.append("Address: ")
-	          .append(currentAddress)
-	          .append("\n");
-	    }
+	    sb.append("Address:\n")
+	      .append(getCurrentAddress())
+	      .append("\n\n");
 
-	    Function function = getCurrentFunction();
+	    sb.append("Function:\n")
+	      .append(getCurrentFunctionName())
+	      .append("\n\n");
 
-	    if (function != null) {
-	        sb.append("Function: ")
-	          .append(function.getName())
-	          .append("\n");
-	    }
+	    sb.append("Selection:\n")
+	      .append(getCurrentSelection())
+	      .append("\n\n");
+
+	    sb.append("Instruction:\n")
+	      .append(getCurrentInstruction())
+	      .append("\n\n");
+
+	    sb.append("Data:\n")
+	      .append(getCurrentData())
+	      .append("\n\n");
+
+	    sb.append("Symbol:\n")
+	      .append(getCurrentSymbol());
 
 	    return sb.toString();
 	}
-
 }
